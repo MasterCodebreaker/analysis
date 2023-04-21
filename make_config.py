@@ -24,7 +24,7 @@ config["training"] = {
     "momentum" : 0.9,
     "gamma" : 0.1,
     "step_size" : 100,
-    "training_bulks" : (1,2)
+    "training_bulks" : (10,40,50,50,50,50,50,50)
 }
 with open("./settings1.ini", "w") as f:
     config.write(f)
