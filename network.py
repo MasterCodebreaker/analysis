@@ -50,20 +50,26 @@ class NN():
             self.epok += 1
             
             with torch.no_grad():
-                hookF = [Hook(layer[1]) for layer in list(self.model._modules.items())]
-                # TODO: Not the most elegant way of doing it, avoid pushing dataset through a second time, or do I have to?
-                self.model.forward(torch.tensor(train_data_loader.dataset.data[:, :-10]).view(-1,28,28).float().to(self.device))
-                # Save activations with the hooks traindata.
-                for i,hook in enumerate(hookF):
-                    name = self.layer_names[i]
-                    np.save("./activations/"+ self.model_n + "_"+ name +"_"+str(self.epok)+ "_"+ ".npy", hook.output.detach().cpu().numpy())
-
                 if len(test_data_loader) >0:
                     x,y = next(iter(test_data_loader))
                     test_x = self.model.forward(x)
                     test_acc = sum(test_x.detach().cpu().argmax(axis = 1) == y.detach().cpu().argmax(axis = 1))/x.detach().cpu().shape[0]
                 else:
                     test_acc = 1
+            
+            self.train_loss.append(float(train_loss))
+            self.train_acc.append(float(train_acc/number))
+            self.test_acc.append(float(test_acc))
+            print(f"Loss = {train_loss} , train_acc = {float(train_acc/number)} , test acc = {float(test_acc)}, lr = {self.optimizer.param_groups[0]['lr']}, epoch = {self.epok}")
+            
+        with torch.no_grad():
+            hookF = [Hook(layer[1]) for layer in list(self.model._modules.items())]
+            # TODO: Not the most elegant way of doing it, avoid pushing dataset through a second time, or do I have to?
+            self.model.forward(torch.tensor(train_data_loader.dataset.data[:, :-10]).view(-1,28,28).float().to(self.device))
+            # Save activations with the hooks traindata.
+            for i,hook in enumerate(hookF):
+                name = self.layer_names[i]
+                np.save("./activations/"+ self.model_n + "_"+ name +"_"+str(self.epok)+ "_"+ ".npy", hook.output.detach().cpu().numpy())
 
             # Saving weights from network
             for name in self.layer_names:
@@ -73,11 +79,7 @@ class NN():
                 except:
                     # This implies there is no weights in the layer, such as ReLu.
                     pass 
-            
-            self.train_loss.append(float(train_loss))
-            self.train_acc.append(float(train_acc/number))
-            self.test_acc.append(float(test_acc))
-            print(f"Loss = {train_loss} , train_acc = {float(train_acc/number)} , test acc = {float(test_acc)}, lr = {self.optimizer.param_groups[0]['lr']}, epoch = {self.epok}")
+
 
     def training(self, training_bulks, train_data_loader, test_data_loader):
         for n_epochs in training_bulks:
