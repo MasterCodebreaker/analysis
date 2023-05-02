@@ -1,10 +1,10 @@
 from my_models import *
 from configparser import ConfigParser
-from dataloader import dataloader
+from dataloader_2 import dataloader
 from torchsummary import summary
 from network import NN
 from utils import parse_int_tuple
-config_file = "./settings1.ini"
+config_file = "./settings_net2_noRELU.ini"
 
 parser = ConfigParser()
 parser.read(config_file)
@@ -26,11 +26,18 @@ if __name__ == "__main__":
     #If local
     device = torch.device("mps" if torch.backends.mps.is_available() else device)
     #DataLoader 
-    train_data_loader, test_data_loader, pred = dataloader(device=device, dataloader_dic=dataloader_dic)
+    train_data_loader, test_data_loader, pred = dataloader(device=device, dataloader_dic=dataloader_dic, input_dim = parse_int_tuple(network_dic["input_dimension"]))
     
     #Create and train
-    if network_dic["model_n"] == "Net0":
+    if network_dic["model_n"] == "Net2":
+        model = Net2()
+    elif network_dic["model_n"] == "Net1":
+        model = Net1()
+    elif network_dic["model_n"] == "Net0":
         model = Net0()
+    elif network_dic["model_n"] == "Net2_noRELU":
+        model = Net2()
+
     else:
         print("There exist no model with this name")
     #remove
@@ -43,5 +50,5 @@ if __name__ == "__main__":
         print("Cant load old model, training from scratch")
     model.to(device)
 
-    network = NN(model = model,device = device,training_dic = training_dic, model_n = network_dic["model_n"] , starting_epoch=int(network_dic["starting_epoch"]))
+    network = NN(model = model,device = device,training_dic = training_dic, model_n = network_dic["model_n"] , input_dim = parse_int_tuple(network_dic["input_dimension"]), starting_epoch=int(network_dic["starting_epoch"]))
     network.training(training_bulks=parse_int_tuple(training_dic["training_bulks"]), train_data_loader=train_data_loader, test_data_loader=test_data_loader)

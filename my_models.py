@@ -27,6 +27,59 @@ class Net0(nn.Module):
         x = self.s1(x)
         return x
 
+
+class Net1(nn.Module):
+    def __init__(self):
+        super(Net1, self).__init__()
+        self.fc4 = nn.Linear(29*29,256)
+        self.s4 = nn.ReLU()
+        self.fc3 = nn.Linear(256,128)
+        self.s3 = nn.ReLU()
+        self.fc2 = nn.Linear(128,64)
+        self.s2 = nn.ReLU()
+        self.fc1 = nn.Linear(64,1)
+        self.s1 = nn.ReLU()
+
+    def forward(self, x):
+        x = torch.flatten(x, 1)
+        x = self.fc4(x)
+        x = self.s4(x)
+        x = self.fc3(x)
+        x = self.s3(x)
+        x = self.fc2(x)
+        x = self.s2(x)
+        x = self.fc1(x)
+        #x = self.s1(x)
+        return x
+
+class Net2(nn.Module):
+    def __init__(self):
+        super(Net2, self).__init__()
+        self.fc4 = nn.Linear(101*101,512)
+        #self.s4 = nn.ReLU()
+        self.s4 = nn.Tanh()
+        self.fc3 = nn.Linear(512,64) 
+        self.s3 = nn.Tanh()
+        #self.s3 = nn.ReLU()
+        self.fc2 = nn.Linear(64,16)
+        self.s2 = nn.Tanh()
+        #self.s2 = nn.ReLU()
+        self.fc1 = nn.Linear(16,1)
+        self.s1 = nn.Tanh()
+        #self.s1 = nn.ReLU()
+
+    def forward(self, x):
+        x = torch.flatten(x, 1)
+        x = self.fc4(x)
+        x = self.s4(x)
+        x = self.fc3(x)
+        x = self.s3(x)
+        x = self.fc2(x)
+        x = self.s2(x)
+        x = self.fc1(x)
+        x = self.s1(x)
+        return x
+
 class Hook():
     def __init__(self, module, backward=False):
         if backward==False:

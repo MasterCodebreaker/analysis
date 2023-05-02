@@ -2,14 +2,27 @@ import numpy as np
 import torch
 import torch.nn as nn
 from tqdm import tqdm
-from dataloader import dataloader
 from torch.optim.lr_scheduler import StepLR
-from my_models import Net0, Hook
+from my_models import Hook
 
+
+
+def angle_loss(y_true, y_pred):
+    
+
+    # Calculate the angular distance (the minimum difference between angles)
+    angle_diff = torch.abs(y_true - y_pred)
+    angle_distance = torch.min(angle_diff, 1.0 - angle_diff)
+
+    # Calculate the mean squared error loss
+    mse_loss = nn.MSELoss()
+    loss = mse_loss(angle_distance, torch.zeros_like(angle_distance))
+
+    return loss
 
 
 class NN():
-    def __init__(self,model,training_dic, device, model_n, starting_epoch: int = 1):
+    def __init__(self,model,training_dic, device, model_n, input_dim, starting_epoch: int = 1):
         # TODO REMOVE DEVICE
         self.train_acc = []
         self.test_acc = []
@@ -18,9 +31,13 @@ class NN():
         self.epok = starting_epoch
         self.model_n = model_n
         self.device = device
+        self.input_dim = input_dim
+        print("input_dim = ", input_dim)
         self.model = model.to(self.device)
         self.optimizer = torch.optim.SGD(self.model.parameters(), lr=float(training_dic["lr"]), momentum=float(training_dic["momentum"]), weight_decay=float(training_dic["weight_decay"]))
-        self.criterion = nn.CrossEntropyLoss()
+        #self.criterion = nn.CrossEntropyLoss()
+        #self.optimizer  = torch.optim.Adam(self.model.parameters())
+        self.criterion = angle_loss
         self.scheduler = StepLR(self.optimizer, step_size=int(training_dic["step_size"]), gamma=float(training_dic["gamma"]))
 
         for name, _ in self.model.named_children():
@@ -65,7 +82,7 @@ class NN():
         with torch.no_grad():
             hookF = [Hook(layer[1]) for layer in list(self.model._modules.items())]
             # TODO: Not the most elegant way of doing it, avoid pushing dataset through a second time, or do I have to?
-            self.model.forward(torch.tensor(train_data_loader.dataset.data[:, :-10]).view(-1,28,28).float().to(self.device))
+            self.model.forward(torch.tensor(train_data_loader.dataset.data[:, :-1]).view(-1,self.input_dim[1],self.input_dim[2]).float().to(self.device))
             # Save activations with the hooks traindata.
             for i,hook in enumerate(hookF):
                 name = self.layer_names[i]

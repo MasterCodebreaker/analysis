@@ -6,15 +6,15 @@ config = ConfigParser()
 
 # DataLoader variables
 config["dataloader"] = {
-    "train_name": "./data/train.csv",
-    "test_name": "./data/test.csv",
+    "train_name": "/Users/sigurgau/Documents/activations_mnist/rotated_lines.csv",
+    "test_name": "nan",
     "test_frac": 0.1,
     "batch_size": 128,
 }
 # Network variables
 config["network"] = {
-    "input_dimension": (1,28,28),
-    "model_n" : "Net0",
+    "input_dimension": (1,29,29),
+    "model_n" : "Net1",
     "starting_epoch": 0,
 }
 # Training variables
@@ -26,6 +26,6 @@ config["training"] = {
     "step_size" : 100,
     "training_bulks" : (10,40,50,50,50,50,50,50)
 }
-with open("./settings1.ini", "w") as f:
+with open("./settings_net1.ini", "w") as f:
     config.write(f)
 
